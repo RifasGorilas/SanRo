@@ -948,10 +948,9 @@
             categories.forEach(cat => {
                 const grid = document.getElementById('grid-' + cat);
                 if (!grid) return;
-                grid.innerHTML = ''; // Limpiar grid para evitar duplicados
                 
                 const catProducts = allProducts.filter(p => p.category === cat);
-                grid.innerHTML = catProducts.map(p => {
+                const html = catProducts.map(p => {
                     const discountedPrice = p.discount > 0 ? p.price * (1 - (p.discount / 100)) : p.price;
                     return `
                         <div class="catalog-card" style="position: relative;">
@@ -972,6 +971,7 @@
                         </div>
                     `;
                 }).join('');
+                grid.innerHTML = html || '<p style="grid-column: 1/-1; color: #555;">No hay productos en esta categoría.</p>';
             });
         }
 

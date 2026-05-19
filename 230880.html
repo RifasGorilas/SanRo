@@ -227,6 +227,7 @@
         let allActivities = [];
         let adminUser = null;
         let editingId = null;
+        let isSaving = false;
 
         // Manejador de Login
         document.getElementById('login-form').addEventListener('submit', async function(e) {
@@ -296,6 +297,12 @@
         });
 
         async function saveProduct(imgSrc) {
+            if (isSaving) return;
+            isSaving = true;
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerText = "Procesando...";
+
             const productData = {
                 brand: document.getElementById('pBrand').value,
                 model: document.getElementById('pModel').value,
@@ -321,6 +328,11 @@
                 }
             } catch (err) {
                 console.error("Error al guardar: ", err);
+                alert('Error al guardar el producto.');
+            } finally {
+                isSaving = false;
+                btn.disabled = false;
+                btn.innerText = editingId ? "Guardar Cambios" : "Publicar en Catálogo";
             }
         }
 
