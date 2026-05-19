@@ -40,9 +40,10 @@
         }
 
         @keyframes backgroundSlideshow {
-            0%, 100% { background-image: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1920&q=80'); }
-            33% { background-image: url('https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80'); }
-            66% { background-image: url('https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=1920&q=80'); }
+            0%, 100% { background-image: url('transicion1.jpg'); }
+            25% { background-image: url('transicion2.jpg'); }
+            50% { background-image: url('transicion3.jpeg'); }
+            75% { background-image: url('transicion4.png'); }
         }
 
         .container {
@@ -70,11 +71,23 @@
             justify-content: flex-end;
         }
 
+        @media (max-width: 768px) {
+            .top-bar .container {
+                justify-content: center;
+            }
+        }
+
         .top-bar-content {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .top-bar-content {
+                align-items: center;
+            }
         }
 
         .contact-info span {
@@ -137,6 +150,15 @@
             color: #fff;
         }
 
+        @media (max-width: 768px) {
+            .logo-title {
+                font-size: 1.8rem;
+            }
+            .main-logo {
+                height: 70px;
+            }
+        }
+
         .logo-title span {
             color: #d4af37;
         }
@@ -160,6 +182,14 @@
             display: flex;
         }
 
+        @media (max-width: 768px) {
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+
         .nav-links li {
             margin: 0 20px;
         }
@@ -171,6 +201,36 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             transition: 0.3s;
+        }
+
+        /* Estilos del Dropdown (Copiados de index.html para consistencia) */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+            box-shadow: 0px 10px 30px rgba(212, 175, 55, 0.3);
+            z-index: 1001;
+            list-style: none;
+            padding: 15px 0;
+            border: 1px solid #d4af37;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 8px;
+        }
+
+        .dropdown-content li {
+            margin: 5px 0 !important;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
 
         .nav-links a:hover {
@@ -257,9 +317,39 @@
         }
 
         .contact-card .whatsapp-logo {
-            height: 40px; /* Ajusta el tamaño del logo de WhatsApp */
+            height: 60px; /* Tamaño aumentado para mayor visibilidad */
             margin-bottom: 15px;
             filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
+        }
+
+        /* Ventanas Emergentes (Modales) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #111;
+            border: 2px solid #d4af37;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute; top: 15px; right: 20px; color: #d4af37; font-size: 2rem; cursor: pointer;
         }
 
         /* Media Queries para Responsividad */
@@ -292,7 +382,7 @@
                     </a>
                 </div>
                 <div class="actions">
-                    <a href="#" class="btn-track">Rastrear Pedido</a>
+                    <a href="javascript:void(0)" class="btn-track" onclick="window.trackOrder()">Rastrear Pedido</a>
                 </div>
             </div>
         </div>
@@ -311,7 +401,15 @@
             <ul class="nav-links">
                 <li><a href="index.html">Inicio</a></li>
                 <li><a href="catalog.html">Tienda</a></li>
-                <li><a href="#">Marcas</a></li> <!-- Mantener como placeholder o implementar dropdown si es necesario -->
+                <li class="dropdown">
+                    <a href="#">Marcas</a>
+                    <ul class="dropdown-content">
+                        <li><a href="javascript:void(0)" onclick="showBrand('Melo')">Melo</a></li>
+                        <li><a href="javascript:void(0)" onclick="showBrand('Vamav')">Vamav</a></li>
+                        <li><a href="javascript:void(0)" onclick="showBrand('Mackie')">Mackie</a></li>
+                        <li><a href="javascript:void(0)" onclick="showBrand('Alien')">Alien</a></li>
+                    </ul>
+                </li>
                 <li><a href="support.html">Soporte</a></li>
             </ul>
         </nav>
@@ -347,7 +445,10 @@
                 </div>
                 <div class="contact-card">
                     <h2>Contacto WhatsApp</h2>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="whatsapp-logo">
+                    <!-- Se utiliza un SVG para eliminar el fondo y garantizar máxima calidad en cualquier tamaño -->
+                    <svg class="whatsapp-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="#25D366">
+                        <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.2-8.5-44.2-27.1-16.4-14.6-27.4-32.7-30.6-38.1-3.2-5.5-.3-8.5 2.5-11.2 2.5-2.5 5.5-6.5 8.3-9.7 2.8-3.3 3.7-5.5 5.5-9.3 1.9-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.2 5.8 23.5 9.2 31.5 11.8 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+                    </svg>
                     <a href="https://wa.me/526867554593?text=Hola,%20necesito%20soporte%20técnico%20de%20Audios%20Sanroman" target="_blank">Enviar Mensaje</a>
                 </div>
                 <div class="contact-card">
@@ -359,5 +460,109 @@
         </div>
     </section>
 
+    <!-- Ventana Emergente de Marca -->
+    <div id="brandModal" class="modal-overlay" onclick="closeBrandModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeBrandModal()">&times;</span>
+            <img id="modalBrandLogo" src="" alt="Logo Marca" class="brand-logo-modal" style="max-height: 150px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); display: none;">
+            <h2 id="modalBrandName" style="color: #ffd700; margin-bottom: 20px;">Marca</h2>
+            <p id="modalBrandDesc" style="color: #ccc;">Descripción aquí.</p>
+        </div>
+    </div>
+
+    <!-- Ventana Emergente de Rastreo -->
+    <div id="trackingModal" class="modal-overlay" onclick="window.closeTrackingModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="window.closeTrackingModal()">&times;</span>
+            <h2 style="color: #ffd700; margin-bottom: 20px; letter-spacing: 2px;">RASTREO DE PEDIDO</h2>
+            <div id="trackingInputSection">
+                <input type="text" id="orderTrackNum" placeholder="INGRESE NO. DE ORDEN" style="padding: 12px; border-radius: 8px; border: 1px solid #d4af37; background: #222; color: #fff; width: 100%; margin-bottom: 20px; text-align: center;">
+                <button class="btn-track" onclick="window.processTracking()" style="width: 100%; padding: 15px; background: #d4af37; color: #000;">CONSULTAR ESTATUS</button>
+            </div>
+            <div id="trackingResultSection" style="display: none; margin-top: 20px;">
+                <h3 id="trackStatusText" style="color: #ffd700; margin-bottom: 10px;"></h3>
+                <p id="trackDetails" style="color: #ccc;"></p>
+                <button class="btn-track" onclick="window.trackOrder()" style="margin-top: 20px; width: 100%;">BUSCAR OTRA ORDEN</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3uF_zzZ6aKJxfnCc2mhhswHsFRK6aRVU",
+            authDomain: "saannrroo.firebaseapp.com",
+            projectId: "saannrroo",
+            storageBucket: "saannrroo.firebasestorage.app",
+            messagingSenderId: "506406311616",
+            appId: "1:506406311616:web:c9ed0370a2b7ad6f05ff25"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Lógica de Rastreo
+        window.trackOrder = function() {
+            document.getElementById('trackingModal').style.display = 'flex';
+            document.getElementById('trackingInputSection').style.display = 'block';
+            document.getElementById('trackingResultSection').style.display = 'none';
+        };
+
+        window.closeTrackingModal = function() {
+            document.getElementById('trackingModal').style.display = 'none';
+        };
+
+        window.processTracking = async function() {
+            const orderNum = document.getElementById('orderTrackNum').value.toUpperCase().trim();
+            if (!orderNum) return;
+            try {
+                const q = query(collection(db, "asr_orders"), where("orderNumber", "==", orderNum));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) { alert("Orden no encontrada"); return; }
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    document.getElementById('trackingInputSection').style.display = 'none';
+                    document.getElementById('trackingResultSection').style.display = 'block';
+                    document.getElementById('trackStatusText').innerText = data.productStatus;
+                    document.getElementById('trackDetails').innerHTML = `<strong>ORDEN:</strong> ${data.orderNumber}<br><strong>CLIENTE:</strong> ${data.name}`;
+                });
+            } catch (e) { console.error(e); }
+        };
+
+        // Lógica de Marcas
+        const brandsData = {
+            'Melo': { 
+                desc: 'MeloAudio Marca enfocada en músicos digitales y creadores de contenido. Destaca por ofrecer interfaces de audio y controladores MIDI compactos, prácticos y accesibles, especialmente útiles para streaming, home studio y grabación móvil. Su punto fuerte es la relación calidad-precio y la facilidad de uso para principiantes y usuarios intermedios.',
+                logo: 'melologo.png'
+            },
+            'Vamav': { 
+                desc: 'Vamav Audio se mueve más en el segmento económico, ofreciendo equipos pensados para usuarios que buscan funcionalidad básica sin gastar demasiado. Aunque no tiene la reputación global de marcas más consolidadas, suele llamar la atención por diseños modernos y soluciones accesibles para setups caseros o automotrices.',
+                logo: 'vamavlogo.jpeg'
+            },
+            'Mackie': { 
+                desc: 'Mackie es una de las marcas más reconocidas en audio profesional. Tiene décadas de experiencia en mixers, monitores de estudio, bocinas activas e interfaces de audio. Es valorada por su sonido sólido, construcción resistente y excelente rendimiento para estudios, DJs y sonido en vivo. Muchos músicos consideran a Mackie una opción confiable por su equilibrio entre calidad profesional y precio accesible.',
+                logo: 'mackielogo.jpg'
+            },
+            'Alien': { 
+                desc: 'Alien Audio es una marca más de nicho, conocida principalmente en el mundo del bajo eléctrico y algunos productos de audio personalizados. Se distingue por enfocarse en componentes premium y sonido potente orientado a músicos que buscan personalidad y carácter en su equipo. En algunos mercados también se asocia con audio automotriz económico y soluciones de sonido personalizadas.',
+                logo: 'alienlogo.webp'
+            }
+        };
+
+        window.showBrand = function(name) {
+            document.getElementById('modalBrandName').innerText = name;
+            document.getElementById('modalBrandDesc').innerText = brandsData[name].desc;
+            const logo = document.getElementById('modalBrandLogo');
+            logo.src = brandsData[name].logo;
+            logo.style.display = 'inline-block';
+            document.getElementById('brandModal').style.display = 'flex';
+        };
+
+        window.closeBrandModal = function() {
+            document.getElementById('brandModal').style.display = 'none';
+        };
+    </script>
 </body>
 </html>

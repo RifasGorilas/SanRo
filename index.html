@@ -38,9 +38,10 @@
         }
 
         @keyframes backgroundSlideshow {
-            0%, 100% { background-image: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1920&q=80'); }
-            33% { background-image: url('https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80'); }
-            66% { background-image: url('https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=1920&q=80'); }
+            0%, 100% { background-image: url('transicion1.jpg'); }
+            25% { background-image: url('transicion2.jpg'); }
+            50% { background-image: url('transicion3.jpeg'); }
+            75% { background-image: url('transicion4.png'); }
         }
 
         .container {
@@ -68,11 +69,23 @@
             justify-content: flex-end;
         }
 
+        @media (max-width: 768px) {
+            .top-bar .container {
+                justify-content: center;
+            }
+        }
+
         .top-bar-content {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .top-bar-content {
+                align-items: center;
+            }
         }
 
         .contact-info span {
@@ -139,6 +152,15 @@
             color: #d4af37;
         }
 
+        @media (max-width: 768px) {
+            .logo-title {
+                font-size: 1.8rem;
+            }
+            .main-logo {
+                height: 70px;
+            }
+        }
+
         .main-logo {
             height: 100px;
             width: auto;
@@ -156,6 +178,14 @@
         .nav-links {
             list-style: none;
             display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
         }
 
         .nav-links li {
@@ -252,7 +282,7 @@
         }
 
         .brand-logo-modal {
-            max-height: 80px;
+            max-height: 150px;
             margin-bottom: 20px;
             filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
         }
@@ -353,18 +383,47 @@
         }
 
         .brand-item {
-            padding: 0 80px;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            padding: 0 60px;
             font-size: 2.5rem;
             font-weight: 900;
             color: rgba(212, 175, 55, 0.5); /* Dorado con transparencia */
             text-transform: uppercase;
             letter-spacing: 12px;
-            transition: color 0.4s ease;
+            transition: all 0.4s ease;
             cursor: default;
+        }
+
+        .brand-logo-carousel {
+            height: 90px;
+            width: auto;
+            opacity: 0.3; /* Desvanecido */
+            filter: grayscale(100%) brightness(1.5);
+            transition: all 0.4s ease;
         }
 
         .brand-item:hover {
             color: #ffd700; /* Brillo al pasar el mouse */
+            transform: scale(1.05);
+        }
+
+        .brand-item:hover .brand-logo-carousel {
+            opacity: 1;
+            filter: grayscale(0%) brightness(1);
+        }
+
+        @media (max-width: 768px) {
+            .brand-item {
+                font-size: 1.5rem;
+                letter-spacing: 5px;
+                gap: 20px;
+                padding: 0 30px;
+            }
+            .brand-logo-carousel {
+                height: 50px;
+            }
         }
 
         @keyframes scroll {
@@ -424,7 +483,7 @@
         <div class="hero-content">
             <h1>EL PODER DEL <span>SONIDO PURO</span></h1>
             <p>La ingeniería acústica más avanzada llega a tus oídos. Equipos de alta fidelidad para los más exigentes.</p>
-            <a href="#" class="btn-main">Explorar Colección</a>
+            <a href="catalog.html" class="btn-main">Explorar Colección</a>
         </div>
     </section>
 
@@ -462,15 +521,15 @@
     <!-- Banda de Marcas -->
     <section class="brands-carousel">
         <div class="carousel-track">
-            <div class="brand-item">Melo</div>
-            <div class="brand-item">Vamav</div>
-            <div class="brand-item">Mackie</div>
-            <div class="brand-item">Alien</div>
+            <div class="brand-item">Melo <img src="melologo.png" alt="Melo" class="brand-logo-carousel"></div>
+            <div class="brand-item">Vamav <img src="vamavlogo.jpeg" alt="Vamav" class="brand-logo-carousel"></div>
+            <div class="brand-item">Mackie <img src="mackielogo.jpg" alt="Mackie" class="brand-logo-carousel"></div>
+            <div class="brand-item">Alien <img src="alienlogo.webp" alt="Alien" class="brand-logo-carousel"></div>
             <!-- Repetición para efecto de scroll infinito -->
-            <div class="brand-item">Melo</div>
-            <div class="brand-item">Vamav</div>
-            <div class="brand-item">Mackie</div>
-            <div class="brand-item">Alien</div>
+            <div class="brand-item">Melo <img src="melologo.png" alt="Melo" class="brand-logo-carousel"></div>
+            <div class="brand-item">Vamav <img src="vamavlogo.jpeg" alt="Vamav" class="brand-logo-carousel"></div>
+            <div class="brand-item">Mackie <img src="mackielogo.jpg" alt="Mackie" class="brand-logo-carousel"></div>
+            <div class="brand-item">Alien <img src="alienlogo.webp" alt="Alien" class="brand-logo-carousel"></div>
         </div>
     </section>
 
@@ -564,20 +623,20 @@
 
         const brandsData = {
             'Melo': {
-                desc: 'Melo es líder en sistemas de refuerzo sonoro profesional, ofreciendo una fidelidad excepcional y potencia diseñada para grandes escenarios y auditorios.',
-                logo: 'melo-logo.png' // Asegúrate de tener estas imágenes
+                desc: 'MeloAudio Marca enfocada en músicos digitales y creadores de contenido. Destaca por ofrecer interfaces de audio y controladores MIDI compactos, prácticos y accesibles, especialmente útiles para streaming, home studio y grabación móvil. Su punto fuerte es la relación calidad-precio y la facilidad de uso para principiantes y usuarios intermedios.',
+                logo: 'melologo.png'
             },
             'Vamav': {
-                desc: 'Vamav se destaca por su durabilidad y eficiencia en amplificación y bafles activos, siendo la opción predilecta para DJs y eventos móviles de alta exigencia.',
-                logo: 'vamav-logo.png'
+                desc: 'Vamav Audio se mueve más en el segmento económico, ofreciendo equipos pensados para usuarios que buscan funcionalidad básica sin gastar demasiado. Aunque no tiene la reputación global de marcas más consolidadas, suele llamar la atención por diseños modernos y soluciones accesibles para setups caseros o automotrices.',
+                logo: 'vamavlogo.jpeg'
             },
             'Mackie': {
-                desc: 'Con décadas de trayectoria, Mackie es sinónimo de precisión en mezcla y monitoreo de estudio, transformando la manera en que se produce la música.',
-                logo: 'mackie-logo.png'
+                desc: 'Mackie es una de las marcas más reconocidas en audio profesional. Tiene décadas de experiencia en mixers, monitores de estudio, bocinas activas e interfaces de audio. Es valorada por su sonido sólido, construcción resistente y excelente rendimiento para estudios, DJs y sonido en vivo. Muchos músicos consideran a Mackie una opción confiable por su equilibrio entre calidad profesional y precio accesible.',
+                logo: 'mackielogo.jpg'
             },
             'Alien': {
-                desc: 'Alien Audio combina tecnología de punta con diseños innovadores en iluminación y audio profesional, creando experiencias sensoriales completas.',
-                logo: 'alien-logo.png'
+                desc: 'Alien Audio es una marca más de nicho, conocida principalmente en el mundo del bajo eléctrico y algunos productos de audio personalizados. Se distingue por enfocarse en componentes premium y sonido potente orientado a músicos que buscan personalidad y carácter en su equipo. En algunos mercados también se asocia con audio automotriz económico y soluciones de sonido personalizadas.',
+                logo: 'alienlogo.webp'
             }
         };
 

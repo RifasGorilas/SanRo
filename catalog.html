@@ -40,9 +40,10 @@
         }
 
         @keyframes backgroundSlideshow {
-            0%, 100% { background-image: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1920&q=80'); }
-            33% { background-image: url('https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80'); }
-            66% { background-image: url('https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=1920&q=80'); }
+            0%, 100% { background-image: url('transicion1.jpg'); }
+            25% { background-image: url('transicion2.jpg'); }
+            50% { background-image: url('transicion3.jpeg'); }
+            75% { background-image: url('transicion4.png'); }
         }
 
         .container {
@@ -70,11 +71,23 @@
             justify-content: flex-end;
         }
 
+        @media (max-width: 768px) {
+            .top-bar .container {
+                justify-content: center;
+            }
+        }
+
         .top-bar-content {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .top-bar-content {
+                align-items: center;
+            }
         }
 
         .contact-info span {
@@ -137,6 +150,15 @@
             color: #fff;
         }
 
+        @media (max-width: 768px) {
+            .logo-title {
+                font-size: 1.8rem;
+            }
+            .main-logo {
+                height: 70px;
+            }
+        }
+
         .logo-title span {
             color: #d4af37;
         }
@@ -160,6 +182,14 @@
             display: flex;
         }
 
+        @media (max-width: 768px) {
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+
         .nav-links li {
             margin: 0 20px;
         }
@@ -171,6 +201,34 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             transition: 0.3s;
+        }
+
+        /* Dropdown Marcas */
+        .dropdown { position: relative; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(17, 17, 17, 0.95);
+            min-width: 200px;
+            border: 1px solid #d4af37;
+            z-index: 1001;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 8px;
+            padding: 10px 0;
+        }
+        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content a {
+            display: block;
+            padding: 10px 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        .dropdown-content a:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: #ffd700;
         }
 
         .nav-links a:hover {
@@ -197,6 +255,10 @@
             margin-bottom: 50px;
             text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
             text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .catalog-section h1 { font-size: 2.2rem; }
         }
 
         .category-title {
@@ -583,7 +645,7 @@
                     </a>
                 </div>
                 <div class="actions">
-                    <a href="#" class="btn-track">Rastrear Pedido</a>
+                    <a href="javascript:void(0)" class="btn-track" onclick="window.trackOrder()">Rastrear Pedido</a>
                 </div>
             </div>
         </div>
@@ -602,7 +664,15 @@
             <ul class="nav-links">
                 <li><a href="index.html">Inicio</a></li>
                 <li><a href="catalog.html">Tienda</a></li>
-                <li><a href="index.html">Marcas</a></li>
+                <li class="dropdown">
+                    <a href="#">Marcas</a>
+                    <ul class="dropdown-content">
+                        <li><a href="javascript:void(0)" onclick="window.showBrand('Melo')">Melo</a></li>
+                        <li><a href="javascript:void(0)" onclick="window.showBrand('Vamav')">Vamav</a></li>
+                        <li><a href="javascript:void(0)" onclick="window.showBrand('Mackie')">Mackie</a></li>
+                        <li><a href="javascript:void(0)" onclick="window.showBrand('Alien')">Alien</a></li>
+                    </ul>
+                </li>
                 <li><a href="support.html">Soporte</a></li>
                 <li><a href="javascript:void(0)" class="cart-trigger" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cart-count">0</span></a></li>
             </ul>
@@ -690,6 +760,33 @@
         </div>
     </div>
 
+    <!-- Modal de Marcas (Añadido) -->
+    <div id="brandModal" class="modal-overlay" onclick="window.closeBrandModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="window.closeBrandModal()">&times;</span>
+            <img id="modalBrandLogo" src="" alt="Logo Marca" class="brand-logo-modal" style="max-height: 150px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); display: none;">
+            <h2 id="modalBrandName" style="color: #ffd700; margin-bottom: 20px;"></h2>
+            <p id="modalBrandDesc" style="color: #ccc;"></p>
+        </div>
+    </div>
+
+    <!-- Modal de Rastreo (Asegurar que existe) -->
+    <div id="trackingModal" class="modal-overlay" onclick="window.closeTrackingModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="window.closeTrackingModal()">&times;</span>
+            <h2 style="color: #ffd700; margin-bottom: 20px;">RASTREO DE PEDIDO</h2>
+            <div id="trackingInputSection">
+                <input type="text" id="orderTrackNum" placeholder="INGRESE NO. DE ORDEN" style="padding: 12px; width: 100%; border-radius: 8px; background: #222; color: #fff; border: 1px solid #d4af37; margin-bottom: 10px; text-align: center;">
+                <button class="btn-checkout" onclick="window.processTracking()" style="animation:none;">CONSULTAR</button>
+            </div>
+            <div id="trackingResultSection" style="display: none; margin-top: 20px;">
+                <h3 id="trackStatusText" style="color: #ffd700;"></h3>
+                <p id="trackDetails" style="color: #ccc;"></p>
+                <button class="btn-track" onclick="window.trackOrder()" style="width: 100%; margin-top: 15px;">OTRA CONSULTA</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -708,6 +805,63 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const analytics = getAnalytics(app);
+
+        // Lógica Global de Rastreo (Añadida)
+        window.trackOrder = function() {
+            document.getElementById('trackingModal').style.display = 'flex';
+            document.getElementById('trackingInputSection').style.display = 'block';
+            document.getElementById('trackingResultSection').style.display = 'none';
+        };
+        window.closeTrackingModal = function() { document.getElementById('trackingModal').style.display = 'none'; };
+        window.processTracking = async function() {
+            const orderNum = document.getElementById('orderTrackNum').value.toUpperCase().trim();
+            if (!orderNum) return;
+            const { query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            const q = query(collection(db, "asr_orders"), where("orderNumber", "==", orderNum));
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) { alert("Orden no encontrada"); return; }
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                document.getElementById('trackingInputSection').style.display = 'none';
+                document.getElementById('trackingResultSection').style.display = 'block';
+                document.getElementById('trackStatusText').innerText = data.productStatus;
+                document.getElementById('trackDetails').innerHTML = `<strong>ORDEN:</strong> ${data.orderNumber}<br><strong>CLIENTE:</strong> ${data.name}`;
+            });
+        };
+
+        // Lógica de Marcas (Añadida)
+        const brandsData = {
+            'Melo': { 
+                desc: 'MeloAudio Marca enfocada en músicos digitales y creadores de contenido. Destaca por ofrecer interfaces de audio y controladores MIDI compactos, prácticos y accesibles, especialmente útiles para streaming, home studio y grabación móvil. Su punto fuerte es la relación calidad-precio y la facilidad de uso para principiantes y usuarios intermedios.',
+                logo: 'melologo.png'
+            },
+            'Vamav': { 
+                desc: 'Vamav Audio se mueve más en el segmento económico, ofreciendo equipos pensados para usuarios que buscan funcionalidad básica sin gastar demasiado. Aunque no tiene la reputación global de marcas más consolidadas, suele llamar la atención por diseños modernos y soluciones accesibles para setups caseros o automotrices.',
+                logo: 'vamavlogo.jpeg'
+            },
+            'Mackie': { 
+                desc: 'Mackie es una de las marcas más reconocidas en audio profesional. Tiene décadas de experiencia en mixers, monitores de estudio, bocinas activas e interfaces de audio. Es valorada por su sonido sólido, construcción resistente y excelente rendimiento para estudios, DJs y sonido en vivo. Muchos músicos consideran a Mackie una opción confiable por su equilibrio entre calidad profesional y precio accesible.',
+                logo: 'mackielogo.jpg'
+            },
+            'Alien': { 
+                desc: 'Alien Audio es una marca más de nicho, conocida principalmente en el mundo del bajo eléctrico y algunos productos de audio personalizados. Se distingue por enfocarse en componentes premium y sonido potente orientado a músicos que buscan personalidad y carácter en su equipo. En algunos mercados también se asocia con audio automotriz económico y soluciones de sonido personalizadas.',
+                logo: 'alienlogo.webp'
+            }
+        };
+        window.showBrand = function(name) {
+            const modal = document.getElementById('brandModal');
+            const logo = document.getElementById('modalBrandLogo');
+            document.getElementById('modalBrandName').innerText = name;
+            document.getElementById('modalBrandDesc').innerText = brandsData[name].desc;
+            logo.src = brandsData[name].logo;
+            logo.style.display = 'inline-block';
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+        window.closeBrandModal = function() {
+            document.getElementById('brandModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
 
         let allProducts = [];
         let cart = [];
