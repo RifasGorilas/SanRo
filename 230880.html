@@ -99,6 +99,7 @@
         <section id="inventory-section">
             <h1>Administración de Productos</h1>
             <div class="admin-card">
+                <h2 id="form-title" style="color: #d4af37; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase;">Agregar Nuevo Producto</h2>
                 <form class="form-grid" id="productForm">
                     <div class="input-group">
                         <label>Marca</label>
@@ -136,7 +137,10 @@
                         <label>Descripción</label>
                         <textarea id="pDesc" rows="4" placeholder="Breve descripción del producto..." required></textarea>
                     </div>
-                    <button type="submit" class="btn-save">Publicar en Catálogo</button>
+                    <div style="grid-column: span 2; display: flex; gap: 10px;">
+                        <button type="submit" id="btn-submit" class="btn-save" style="flex: 2;">Publicar en Catálogo</button>
+                        <button type="button" id="btn-cancel" class="btn-save hidden" style="flex: 1; background: #444; color: #fff;" onclick="cancelEdit()">Cancelar</button>
+                    </div>
                 </form>
             </div>
 
@@ -222,6 +226,7 @@
         let allOrders = [];
         let allActivities = [];
         let adminUser = null;
+        let editingId = null;
 
         // Manejador de Login
         document.getElementById('login-form').addEventListener('submit', async function(e) {
@@ -291,22 +296,29 @@
         });
 
         async function saveProduct(imgSrc) {
-            const newProduct = {
+            const productData = {
                 brand: document.getElementById('pBrand').value,
                 model: document.getElementById('pModel').value,
                 price: parseFloat(document.getElementById('pPrice').value),
                 discount: parseInt(document.getElementById('pDiscount').value) || 0,
                 category: document.getElementById('pCategory').value,
                 image: imgSrc || 'https://via.placeholder.com/200',
-                desc: document.getElementById('pDesc').value,
-                createdAt: new Date()
+                desc: document.getElementById('pDesc').value
             };
 
             try {
-                await addDoc(collection(db, "asr_products"), newProduct);
-                logActivity(adminUser, `Agregó el producto: ${newProduct.brand} ${newProduct.model}`);
-                document.getElementById('productForm').reset();
-                alert('Producto agregado exitosamente.');
+                if (editingId) {
+                    await updateDoc(doc(db, "asr_products", editingId), productData);
+                    logActivity(adminUser, `Editó el producto: ${productData.brand} ${productData.model}`);
+                    alert('Producto actualizado exitosamente.');
+                    cancelEdit();
+                } else {
+                    productData.createdAt = new Date();
+                    await addDoc(collection(db, "asr_products"), productData);
+                    logActivity(adminUser, `Agregó el producto: ${productData.brand} ${productData.model}`);
+                    document.getElementById('productForm').reset();
+                    alert('Producto agregado exitosamente.');
+                }
             } catch (err) {
                 console.error("Error al guardar: ", err);
             }
@@ -322,6 +334,9 @@
                     <td>${p.category}</td>
                     <td>${p.discount}%</td>
                     <td>
+                        <button class="status-badge" style="background:#d4af37; color:black; border:none; cursor:pointer; margin-right:5px;" onclick="editProduct('${p.id}')">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
                         <button class="status-badge" style="background:#ff4d4d; color:white; border:none; cursor:pointer;" onclick="deleteProduct('${p.id}')">
                             <i class="fas fa-trash"></i> Quitar
                         </button>
@@ -329,6 +344,31 @@
                 </tr>
             `).join('');
         }
+
+        window.editProduct = function(id) {
+            const p = allProducts.find(prod => prod.id === id);
+            if (!p) return;
+            editingId = id;
+            document.getElementById('form-title').innerText = "Editando Producto";
+            document.getElementById('btn-submit').innerText = "Guardar Cambios";
+            document.getElementById('btn-cancel').classList.remove('hidden');
+            document.getElementById('pBrand').value = p.brand;
+            document.getElementById('pModel').value = p.model;
+            document.getElementById('pPrice').value = p.price;
+            document.getElementById('pDiscount').value = p.discount;
+            document.getElementById('pCategory').value = p.category;
+            document.getElementById('pUrl').value = p.image;
+            document.getElementById('pDesc').value = p.desc;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.cancelEdit = function() {
+            editingId = null;
+            document.getElementById('productForm').reset();
+            document.getElementById('form-title').innerText = "Agregar Nuevo Producto";
+            document.getElementById('btn-submit').innerText = "Publicar en Catálogo";
+            document.getElementById('btn-cancel').classList.add('hidden');
+        };
 
         window.deleteProduct = async function(id) {
             if (confirm("¿Seguro de eliminar este producto?")) {
@@ -411,20 +451,6 @@
             renderActivityLog();
         });
 
-        // Handler Formulario
-        document.getElementById('productForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const file = document.getElementById('pFile').files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    saveProduct(event.target.result);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                saveProduct(document.getElementById('pUrl').value);
-            }
-        });
     </script>
 </body>
 </html>
