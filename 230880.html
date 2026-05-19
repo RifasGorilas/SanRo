@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="SanRo Logo.jpg" type="image/jpeg">
+    <title>Admin Panel | Audios Sanroman</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; background-color: #0a0a0a; color: #fff; display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background: #111; border-right: 1px solid #d4af37; padding: 30px 20px; }
+        .sidebar h2 { color: #d4af37; font-size: 1.2rem; text-align: center; margin-bottom: 40px; letter-spacing: 2px; }
+        .nav-menu { list-style: none; }
+        .nav-menu li { margin-bottom: 20px; }
+        .nav-menu a { text-decoration: none; color: #ccc; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .nav-menu a:hover, .nav-menu a.active { color: #ffd700; }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        h1 { color: #ffd700; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Card Form & Tables */
+        .admin-card { background: #181818; border: 1px solid #333; border-radius: 15px; padding: 30px; margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 0.8rem; color: #d4af37; font-weight: 700; }
+        .input-group input, .input-group select, .input-group textarea { 
+            background: #222; border: 1px solid #444; padding: 12px; color: #fff; border-radius: 8px; font-family: inherit;
+        }
+        .input-group textarea { grid-column: span 2; resize: none; }
+        
+        .btn-save { 
+            grid-column: span 2; background: #d4af37; color: #000; border: none; padding: 15px; 
+            font-weight: 900; text-transform: uppercase; cursor: pointer; border-radius: 8px; margin-top: 10px; transition: 0.3s;
+        }
+        .btn-save:hover { background: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; color: #d4af37; padding: 15px; border-bottom: 2px solid #333; font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
+        .status-paid { background: #2e7d32; color: #fff; }
+        .status-pending { background: #d4af37; color: #000; }
+        .status-shipped { background: #1976d2; color: #fff; }
+
+        .hidden { display: none; }
+
+        /* Estilos Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-box { width: 100%; max-width: 400px; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Inicio de Sesión -->
+    <div id="login-overlay">
+        <div class="admin-card login-box">
+            <h2 style="color: #d4af37; text-align: center; margin-bottom: 30px; letter-spacing: 3px;">ACCESO PRIVADO</h2>
+            <form id="login-form" style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="input-group">
+                    <label>CORREO ELECTRÓNICO</label>
+                    <input type="email" id="admin-user" placeholder="admin@audiosanroman.com" required>
+                </div>
+                <div class="input-group">
+                    <label>CONTRASEÑA</label>
+                    <input type="password" id="admin-pass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-save">ENTRAR AL SISTEMA</button>
+                <p id="login-error" style="color: #ff4d4d; font-size: 0.8rem; text-align: center; display: none;">Credenciales incorrectas. Intente de nuevo.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar (Oculto inicialmente) -->
+    <div class="sidebar">
+        <h2>ASR ADMIN</h2>
+        <ul class="nav-menu">
+            <li><a href="#" class="active" onclick="switchTab('inventory')"><i class="fas fa-boxes"></i> Inventario</a></li>
+            <li><a href="#" onclick="switchTab('orders')"><i class="fas fa-shopping-bag"></i> Pedidos</a></li>
+            <li><a href="#" onclick="switchTab('activity')"><i class="fas fa-history"></i> Registro de Actividad</a></li>
+            <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+            <li><a href="index.html"><i class="fas fa-external-link-alt"></i> Ver Tienda</a></li>
+        </ul>
+    </div>
+
+    <!-- Contenido Principal (Oculto inicialmente) -->
+    <div class="main-content">
+        <!-- Sección Inventario -->
+        <section id="inventory-section">
+            <h1>Administración de Productos</h1>
+            <div class="admin-card">
+                <form class="form-grid" id="productForm">
+                    <div class="input-group">
+                        <label>Marca</label>
+                        <input type="text" id="pBrand" placeholder="Ej: Melo" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Modelo</label>
+                        <input type="text" id="pModel" placeholder="Ej: DSP 15" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Precio (MXN)</label>
+                        <input type="number" id="pPrice" placeholder="0.00" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Descuento (%)</label>
+                        <input type="number" id="pDiscount" placeholder="0" min="0" max="100">
+                    </div>
+                    <div class="input-group">
+                        <label>Categoría</label>
+                        <select id="pCategory">
+                            <option value="15">Altavoces - 15 Pulgadas</option>
+                            <option value="12">Altavoces - 12 Pulgadas</option>
+                            <option value="array">Altavoces - Line Array</option>
+                            <option value="sub">Subwoofer</option>
+                            <option value="micro">Micrófonos y Monitores</option>
+                            <option value="cables">Cables y Refacciones</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Imagen (URL o Archivo)</label>
+                        <input type="text" id="pUrl" placeholder="https://..." style="margin-bottom:5px;">
+                        <input type="file" id="pFile" accept="image/*">
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Descripción</label>
+                        <textarea id="pDesc" rows="4" placeholder="Breve descripción del producto..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-save">Publicar en Catálogo</button>
+                </form>
+            </div>
+
+            <!-- Listado de Productos para Gestión -->
+            <div class="admin-card">
+                <h2 style="color: #d4af37; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase;">Productos en Existencia</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Precio</th>
+                            <th>Categoría</th>
+                            <th>Descuento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-list"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Sección Pedidos -->
+        <section id="orders-section" class="hidden">
+            <h1>Administración de Pedidos</h1>
+            <div class="admin-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No. Orden</th>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Estado (Rep.)</th>
+                            <th>Estado Producto</th>
+                            <th>Estado Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-list"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Sección Registro de Actividad -->
+        <section id="activity-log-section" class="hidden">
+            <h1>Registro de Actividad</h1>
+            <div class="admin-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Usuario</th>
+                            <th>Acción Realizada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activity-log-list">
+                        <!-- Actividades se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3uF_zzZ6aKJxfnCc2mhhswHsFRK6aRVU",
+            authDomain: "saannrroo.firebaseapp.com",
+            projectId: "saannrroo",
+            storageBucket: "saannrroo.firebasestorage.app",
+            messagingSenderId: "506406311616",
+            appId: "1:506406311616:web:c9ed0370a2b7ad6f05ff25",
+            measurementId: "G-L1H6YDJ5LF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allProducts = [];
+        let allOrders = [];
+        let allActivities = [];
+        let adminUser = null;
+
+        // Manejador de Login
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-user').value;
+            const pass = document.getElementById('admin-pass').value;
+            const errorMsg = document.getElementById('login-error');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                errorMsg.style.display = 'none';
+            } catch (error) {
+                console.error("Error de autenticación:", error);
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Observador de estado de autenticación de Firebase
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                adminUser = user.email;
+                initAdmin();
+            } else {
+                document.getElementById('login-overlay').style.display = 'flex';
+            }
+        });
+
+        window.logout = function() {
+            signOut(auth);
+        };
+
+        function initAdmin() {
+            document.getElementById('login-overlay').style.display = 'none';
+        }
+
+        window.switchTab = function(tab) {
+            document.getElementById('inventory-section').classList.add('hidden');
+            document.getElementById('orders-section').classList.add('hidden');
+            document.getElementById('activity-log-section').classList.add('hidden');
+            document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+
+            if(tab === 'inventory') {
+                document.getElementById('inventory-section').classList.remove('hidden');
+                document.querySelector('[onclick="switchTab(\'inventory\')"]').classList.add('active');
+            } else if (tab === 'orders') {
+                document.getElementById('orders-section').classList.remove('hidden');
+                document.querySelector('[onclick="switchTab(\'orders\')"]').classList.add('active');
+                // Se maneja vía onSnapshot real-time
+            } else if (tab === 'activity') {
+                document.getElementById('activity-log-section').classList.remove('hidden');
+                document.querySelector('[onclick="switchTab(\'activity\')"]').classList.add('active');
+            }
+        }
+
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const file = document.getElementById('pFile').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    saveProduct(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                saveProduct(document.getElementById('pUrl').value);
+            }
+        });
+
+        async function saveProduct(imgSrc) {
+            const newProduct = {
+                brand: document.getElementById('pBrand').value,
+                model: document.getElementById('pModel').value,
+                price: parseFloat(document.getElementById('pPrice').value),
+                discount: parseInt(document.getElementById('pDiscount').value) || 0,
+                category: document.getElementById('pCategory').value,
+                image: imgSrc || 'https://via.placeholder.com/200',
+                desc: document.getElementById('pDesc').value,
+                createdAt: new Date()
+            };
+
+            try {
+                await addDoc(collection(db, "asr_products"), newProduct);
+                logActivity(adminUser, `Agregó el producto: ${newProduct.brand} ${newProduct.model}`);
+                document.getElementById('productForm').reset();
+                alert('Producto agregado exitosamente.');
+            } catch (err) {
+                console.error("Error al guardar: ", err);
+            }
+        }
+
+        window.renderInventory = function() {
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = allProducts.map(p => `
+                <tr>
+                    <td>${p.brand}</td>
+                    <td>${p.model}</td>
+                    <td>$${p.price.toLocaleString()}</td>
+                    <td>${p.category}</td>
+                    <td>${p.discount}%</td>
+                    <td>
+                        <button class="status-badge" style="background:#ff4d4d; color:white; border:none; cursor:pointer;" onclick="deleteProduct('${p.id}')">
+                            <i class="fas fa-trash"></i> Quitar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.deleteProduct = async function(id) {
+            if (confirm("¿Seguro de eliminar este producto?")) {
+                try {
+                    const productToDelete = allProducts.find(p => p.id === id);
+                    await deleteDoc(doc(db, "asr_products", id));
+                    if (productToDelete) {
+                        logActivity(adminUser, `Eliminó el producto: ${productToDelete.brand} ${productToDelete.model}`);
+                    }
+                } catch (err) { console.error(err); }
+            }
+        }
+
+        window.renderOrders = function() {
+            const list = document.getElementById('orders-list');
+            list.innerHTML = allOrders.map(o => `
+                <tr>
+                    <td>${o.orderNumber}</td>
+                    <td>${o.name}</td>
+                    <td>${o.phone}</td>
+                    <td>${o.state}</td>
+                    <td>
+                        <select onchange="updateOrderStatus('${o.id}', 'productStatus', this.value)" style="background: #222; color: #fff; border: 1px solid #d4af37; padding: 5px; border-radius: 5px; width: 100%; font-family: inherit;">
+                            <option value="Preparándose" ${o.productStatus === 'Preparándose' ? 'selected' : ''}>Preparándose</option>
+                            <option value="Saliendo de Bodega" ${o.productStatus === 'Saliendo de Bodega' ? 'selected' : ''}>Saliendo de Bodega</option>
+                            <option value="Trayecto a su domicilio" ${o.productStatus === 'Trayecto a su domicilio' ? 'selected' : ''}>Trayecto a su domicilio</option>
+                            <option value="Entregado" ${o.productStatus === 'Entregado' ? 'selected' : ''}>Entregado</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="updateOrderStatus('${o.id}', 'paymentStatus', this.value)" style="background: #222; color: #fff; border: 1px solid #d4af37; padding: 5px; border-radius: 5px; width: 100%; font-family: inherit;">
+                            <option value="Pagado" ${o.paymentStatus === 'Pagado' ? 'selected' : ''}>Pagado</option>
+                            <option value="No pagado" ${o.paymentStatus === 'No pagado' ? 'selected' : ''}>No pagado</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.updateOrderStatus = async function(id, field, value) {
+            try {
+                const orderRef = doc(db, "asr_orders", id);
+                await updateDoc(orderRef, { [field]: value });
+                const order = allOrders.find(o => o.id === id);
+                if (order) {
+                    logActivity(adminUser, `Actualizó el estado de la orden ${order.orderNumber} (${field}) a: ${value}`);
+                }
+                alert('Estado de la orden actualizado.');
+            } catch (err) { console.error(err); }
+        };
+
+        window.renderActivityLog = function() {
+            const list = document.getElementById('activity-log-list');
+            list.innerHTML = allActivities.map(activity => `
+                <tr>
+                    <td>${new Date(activity.timestamp.seconds * 1000).toLocaleString()}</td>
+                    <td>${activity.user}</td>
+                    <td>${activity.action}</td>
+                </tr>
+            `).join('');
+        };
+
+        async function logActivity(user, action) {
+            await addDoc(collection(db, "asr_activity_log"), { user, action, timestamp: new Date() });
+        }
+
+        // Listeners Firestore Real-time
+        onSnapshot(query(collection(db, "asr_products"), orderBy("createdAt", "desc")), (snapshot) => {
+            allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderInventory();
+        });
+
+        onSnapshot(query(collection(db, "asr_orders"), orderBy("timestamp", "desc")), (snapshot) => {
+            allOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderOrders();
+        });
+        
+        onSnapshot(query(collection(db, "asr_activity_log"), orderBy("timestamp", "desc")), (snapshot) => {
+            allActivities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderActivityLog();
+        });
+
+        // Handler Formulario
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const file = document.getElementById('pFile').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    saveProduct(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                saveProduct(document.getElementById('pUrl').value);
+            }
+        });
+    </script>
+</body>
+</html>
