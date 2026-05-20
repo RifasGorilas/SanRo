@@ -12,12 +12,89 @@
         body { font-family: 'Montserrat', sans-serif; background-color: #0a0a0a; color: #fff; display: flex; min-height: 100vh; }
         
         /* Sidebar */
-        .sidebar { width: 250px; background: #111; border-right: 1px solid #d4af37; padding: 30px 20px; }
+        .sidebar {
+            width: 250px;
+            background: #111;
+            border-right: 1px solid #d4af37;
+            padding: 30px 20px;
+            flex-shrink: 0; /* Evita que el sidebar se encoja */
+        }
         .sidebar h2 { color: #d4af37; font-size: 1.2rem; text-align: center; margin-bottom: 40px; letter-spacing: 2px; }
         .nav-menu { list-style: none; }
         .nav-menu li { margin-bottom: 20px; }
         .nav-menu a { text-decoration: none; color: #ccc; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
         .nav-menu a:hover, .nav-menu a.active { color: #ffd700; }
+
+        /* Reorder List Styles */
+        #reorder-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            background: #181818;
+            border: 1px solid #333;
+            border-radius: 15px;
+        }
+        .reorder-item {
+            background: #222;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: grab;
+            width: calc(33.33% - 14px); /* 3 items per row, accounting for gap */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .reorder-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        .reorder-item.dragging {
+            opacity: 0.5;
+            border-color: #ffd700;
+        }
+        .reorder-category-title {
+            width: 100%;
+            color: #d4af37;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            padding: 20px 10px 10px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .reorder-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
+        .reorder-item-info {
+            flex-grow: 1;
+        }
+        .reorder-item-info h4 {
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        .reorder-item-info p {
+            color: #d4af37;
+            font-size: 0.8rem;
+        }
+        @media (max-width: 992px) {
+            .reorder-item {
+                width: calc(50% - 10px); /* 2 items per row */
+            }
+        }
+        @media (max-width: 768px) {
+            .reorder-item {
+                width: 100%; /* 1 item per row */
+            }
+        }
 
         /* Main Content */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
@@ -87,6 +164,7 @@
         <ul class="nav-menu">
             <li><a href="#" class="active" onclick="switchTab('inventory')"><i class="fas fa-boxes"></i> Inventario</a></li>
             <li><a href="#" onclick="switchTab('orders')"><i class="fas fa-shopping-bag"></i> Pedidos</a></li>
+            <li><a href="#" onclick="switchTab('reorder')"><i class="fas fa-sort"></i> Reordenar Catálogo</a></li>
             <li><a href="#" onclick="switchTab('activity')"><i class="fas fa-history"></i> Registro de Actividad</a></li>
             <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
             <li><a href="index.html"><i class="fas fa-external-link-alt"></i> Ver Tienda</a></li>
@@ -116,10 +194,6 @@
                     <div class="input-group">
                         <label>Descuento (%)</label>
                         <input type="number" id="pDiscount" placeholder="0" min="0" max="100">
-                    </div>
-                    <div class="input-group">
-                        <label>Orden (Número)</label>
-                        <input type="number" id="pOrder" placeholder="0" min="0">
                     </div>
                     <div class="input-group">
                         <label>Categoría</label>
@@ -160,7 +234,6 @@
                             <th>Precio</th>
                             <th>Categoría</th>
                             <th>Descuento</th>
-                            <th>Orden</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -186,6 +259,15 @@
                     </thead>
                     <tbody id="orders-list"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- Sección Reordenar Catálogo -->
+        <section id="reorder-section" class="hidden">
+            <h1>Reordenar Productos del Catálogo</h1>
+            <div class="admin-card">
+                <h2 style="color: #d4af37; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase;">Arrastra y suelta para cambiar el orden</h2>
+                <div id="reorder-list"></div>
             </div>
         </section>
 
@@ -232,8 +314,9 @@
         let allOrders = [];
         let allActivities = [];
         let adminUser = null;
-        let editingId = null;
+        let editingProductId = null; // Variable central para edición
         let isSaving = false;
+        let draggedItem = null; // Para la funcionalidad de arrastrar y soltar
 
         // Manejador de Login
         document.getElementById('login-form').addEventListener('submit', async function(e) {
@@ -241,10 +324,13 @@
             const email = document.getElementById('admin-user').value;
             const pass = document.getElementById('admin-pass').value;
             const errorMsg = document.getElementById('login-error');
+            errorMsg.style.display = 'none'; // Ocultar mensaje de error previo
 
             try {
+                // Autenticación con Firebase Auth
                 await signInWithEmailAndPassword(auth, email, pass);
-                errorMsg.style.display = 'none';
+                // El onAuthStateChanged se encargará del resto
+                document.getElementById('productForm').reset();
             } catch (error) {
                 console.error("Error de autenticación:", error);
                 errorMsg.style.display = 'block';
@@ -255,23 +341,27 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 adminUser = user.email;
-                initAdmin();
+                document.getElementById('login-overlay').style.display = 'none';
+                // Asegurarse de que el contenido principal sea visible y el sidebar esté inicializado
+                document.querySelector('.sidebar').style.display = 'flex'; // O 'block' si no es flex
+                document.querySelector('.main-content').style.display = 'block';
+                switchTab('inventory'); // Cargar la pestaña de inventario por defecto
             } else {
                 document.getElementById('login-overlay').style.display = 'flex';
+                document.querySelector('.sidebar').style.display = 'none';
+                document.querySelector('.main-content').style.display = 'none';
             }
         });
 
         window.logout = function() {
             signOut(auth);
+            // onAuthStateChanged se encargará de mostrar el login-overlay
         };
-
-        function initAdmin() {
-            document.getElementById('login-overlay').style.display = 'none';
-        }
 
         window.switchTab = function(tab) {
             document.getElementById('inventory-section').classList.add('hidden');
             document.getElementById('orders-section').classList.add('hidden');
+            document.getElementById('reorder-section').classList.add('hidden');
             document.getElementById('activity-log-section').classList.add('hidden');
             document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
 
@@ -281,6 +371,10 @@
             } else if (tab === 'orders') {
                 document.getElementById('orders-section').classList.remove('hidden');
                 document.querySelector('[onclick="switchTab(\'orders\')"]').classList.add('active');
+            } else if (tab === 'reorder') {
+                document.getElementById('reorder-section').classList.remove('hidden');
+                document.querySelector('[onclick="switchTab(\'reorder\')"]').classList.add('active');
+                renderReorderList(); // Cargar la lista de reordenamiento
                 // Se maneja vía onSnapshot real-time
             } else if (tab === 'activity') {
                 document.getElementById('activity-log-section').classList.remove('hidden');
@@ -313,16 +407,15 @@
                 brand: document.getElementById('pBrand').value,
                 model: document.getElementById('pModel').value,
                 price: parseFloat(document.getElementById('pPrice').value),
-                discount: parseInt(document.getElementById('pDiscount').value) || 0,
+                discount: parseInt(document.getElementById('pDiscount').value) || 0, // Asegurarse de que sea un número
                 category: document.getElementById('pCategory').value,
-                order: parseInt(document.getElementById('pOrder').value) || 0, // Nuevo campo de orden
                 image: imgSrc || 'https://via.placeholder.com/200',
                 desc: document.getElementById('pDesc').value
             };
-
+            
             try {
-                if (editingId) {
-                    await updateDoc(doc(db, "asr_products", editingId), productData);
+                if (editingProductId) {
+                    await updateDoc(doc(db, "asr_products", editingProductId), productData);
                     logActivity(adminUser, `Editó el producto: ${productData.brand} ${productData.model}`);
                     alert('Producto actualizado exitosamente.');
                     cancelEdit();
@@ -338,8 +431,8 @@
                 alert('Error al guardar el producto.');
             } finally {
                 isSaving = false;
-                btn.disabled = false;
-                btn.innerText = editingId ? "Guardar Cambios" : "Publicar en Catálogo";
+                btn.disabled = false; // Habilitar botón
+                btn.innerText = editingProductId ? "Guardar Cambios" : "Publicar en Catálogo";
             }
         }
 
@@ -352,7 +445,6 @@
                     <td>$${p.price.toLocaleString()}</td>
                     <td>${p.category}</td>
                     <td>${p.discount}%</td>
-                    <td>${p.order || 0}</td>
                     <td>
                         <button class="status-badge" style="background:#d4af37; color:black; border:none; cursor:pointer; margin-right:5px;" onclick="editProduct('${p.id}')">
                             <i class="fas fa-edit"></i> Editar
@@ -368,24 +460,22 @@
         window.editProduct = function(id) {
             const p = allProducts.find(prod => prod.id === id);
             if (!p) return;
-            editingId = id;
+            editingProductId = id;
             document.getElementById('form-title').innerText = "Editando Producto";
             document.getElementById('btn-submit').innerText = "Guardar Cambios";
             document.getElementById('btn-cancel').classList.remove('hidden');
             document.getElementById('pBrand').value = p.brand;
             document.getElementById('pModel').value = p.model;
             document.getElementById('pPrice').value = p.price;
-            document.getElementById('pDiscount').value = p.discount;
             document.getElementById('pCategory').value = p.category;
-            document.getElementById('pOrder').value = p.order; // Cargar valor de orden
             document.getElementById('pUrl').value = p.image;
             document.getElementById('pDesc').value = p.desc;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.cancelEdit = function() {
-            editingId = null;
-            document.getElementById('productForm').reset();
+            editingProductId = null;
+            document.getElementById('productForm').reset(); // Limpiar formulario
             document.getElementById('form-title').innerText = "Agregar Nuevo Producto";
             document.getElementById('btn-submit').innerText = "Publicar en Catálogo";
             document.getElementById('btn-cancel').classList.add('hidden');
@@ -456,12 +546,102 @@
             await addDoc(collection(db, "asr_activity_log"), { user, action, timestamp: new Date() });
         }
 
+        // Funcionalidad de Arrastrar y Soltar para Reordenar
+        function handleDragStart(e) {
+            draggedItem = this;
+            setTimeout(() => this.classList.add('dragging'), 0);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const target = e.target.closest('.reorder-item');
+            if (target && target !== draggedItem) {
+                const rect = target.getBoundingClientRect();
+                const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > .5;
+                const parent = target.parentNode;
+                parent.insertBefore(draggedItem, next && target.nextSibling || target);
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedItem = null;
+            updateProductOrderInFirestore();
+        }
+
+        async function updateProductOrderInFirestore() {
+            const reorderList = document.getElementById('reorder-list');
+            // Filtramos solo los elementos que son productos (tienen data-id)
+            const items = Array.from(reorderList.children).filter(el => el.dataset.id);
+            
+            for (let i = 0; i < items.length; i++) {
+                const productId = items[i].dataset.id;
+                const productRef = doc(db, "asr_products", productId);
+                await updateDoc(productRef, { order: i });
+            }
+            logActivity(adminUser, `Reordenó los productos del catálogo.`);
+        }
+
+        const categoryLabels = [
+            { id: '15', label: 'Altavoces - 15 Pulgadas' },
+            { id: '12', label: 'Altavoces - 12 Pulgadas' },
+            { id: 'array', label: 'Altavoces - Line Array' },
+            { id: 'sub', label: 'Subwoofer' },
+            { id: 'micro', label: 'Micrófonos y Monitores' },
+            { id: 'cables', label: 'Cables y Refacciones' },
+            { id: 'consolas', label: 'Consolas' }
+        ];
+
+        window.renderReorderList = function() {
+            const list = document.getElementById('reorder-list');
+            list.innerHTML = '';
+
+            categoryLabels.forEach(cat => {
+                // Añadir título de categoría
+                const header = document.createElement('h3');
+                header.className = 'reorder-category-title';
+                header.innerText = cat.label;
+                list.appendChild(header);
+
+                // Filtrar productos de esta categoría
+                const catProducts = allProducts.filter(p => p.category === cat.id);
+                
+                catProducts.forEach(p => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'reorder-item';
+                itemDiv.setAttribute('draggable', 'true');
+                itemDiv.dataset.id = p.id;
+                itemDiv.innerHTML = `
+                    <img src="${p.image}" alt="${p.model}">
+                    <div class="reorder-item-info">
+                        <h4>${p.brand} ${p.model}</h4>
+                        <p>Categoría: ${p.category}</p>
+                    </div>`;
+                itemDiv.addEventListener('dragstart', handleDragStart);
+                itemDiv.addEventListener('dragover', handleDragOver);
+                itemDiv.addEventListener('drop', handleDrop);
+                itemDiv.addEventListener('dragend', handleDragEnd);
+                list.appendChild(itemDiv);
+                });
+            });
+        };
+
         // Listeners Firestore Real-time
         onSnapshot(query(collection(db, "asr_products"), orderBy("createdAt", "desc")), (snapshot) => {
             allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             // Ordenamos localmente para evitar que Firestore oculte productos sin el campo 'order'
             allProducts.sort((a, b) => (a.order || 0) - (b.order || 0));
-            renderInventory();
+            renderInventory(); // Actualizar la lista de inventario
+            // Si la pestaña de reordenar está activa, también la actualizamos
+            if (!document.getElementById('reorder-section').classList.contains('hidden')) {
+                renderReorderList();
+            }
         });
 
         onSnapshot(query(collection(db, "asr_orders"), orderBy("timestamp", "desc")), (snapshot) => {
