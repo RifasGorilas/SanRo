@@ -118,6 +118,10 @@
                         <input type="number" id="pDiscount" placeholder="0" min="0" max="100">
                     </div>
                     <div class="input-group">
+                        <label>Orden (Número)</label>
+                        <input type="number" id="pOrder" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
                         <label>Categoría</label>
                         <select id="pCategory">
                             <option value="15">Altavoces - 15 Pulgadas</option>
@@ -126,6 +130,7 @@
                             <option value="sub">Subwoofer</option>
                             <option value="micro">Micrófonos y Monitores</option>
                             <option value="cables">Cables y Refacciones</option>
+                            <option value="consolas">Consolas</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -155,6 +160,7 @@
                             <th>Precio</th>
                             <th>Categoría</th>
                             <th>Descuento</th>
+                            <th>Orden</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -309,6 +315,7 @@
                 price: parseFloat(document.getElementById('pPrice').value),
                 discount: parseInt(document.getElementById('pDiscount').value) || 0,
                 category: document.getElementById('pCategory').value,
+                order: parseInt(document.getElementById('pOrder').value) || 0, // Nuevo campo de orden
                 image: imgSrc || 'https://via.placeholder.com/200',
                 desc: document.getElementById('pDesc').value
             };
@@ -345,6 +352,7 @@
                     <td>$${p.price.toLocaleString()}</td>
                     <td>${p.category}</td>
                     <td>${p.discount}%</td>
+                    <td>${p.order || 0}</td>
                     <td>
                         <button class="status-badge" style="background:#d4af37; color:black; border:none; cursor:pointer; margin-right:5px;" onclick="editProduct('${p.id}')">
                             <i class="fas fa-edit"></i> Editar
@@ -369,6 +377,7 @@
             document.getElementById('pPrice').value = p.price;
             document.getElementById('pDiscount').value = p.discount;
             document.getElementById('pCategory').value = p.category;
+            document.getElementById('pOrder').value = p.order; // Cargar valor de orden
             document.getElementById('pUrl').value = p.image;
             document.getElementById('pDesc').value = p.desc;
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -450,6 +459,8 @@
         // Listeners Firestore Real-time
         onSnapshot(query(collection(db, "asr_products"), orderBy("createdAt", "desc")), (snapshot) => {
             allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Ordenamos localmente para evitar que Firestore oculte productos sin el campo 'order'
+            allProducts.sort((a, b) => (a.order || 0) - (b.order || 0));
             renderInventory();
         });
 

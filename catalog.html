@@ -168,7 +168,7 @@
         }
 
         .logo-title {
-            font-size: 2.5rem;
+            font-size: 3.5rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -177,10 +177,11 @@
 
         @media (max-width: 768px) {
             .logo-title {
-                font-size: 1.8rem;
+                font-size: 2.5rem;
             }
             .main-logo {
-                height: 70px;
+                height: 160px;
+                padding: 25px;
             }
         }
 
@@ -189,8 +190,13 @@
         }
 
         .main-logo {
-            height: 100px;
+            height: 300px;
+            padding: 50px;
             width: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            object-position: center 25%;
+            clip-path: polygon(0% 50%, 50% 0%, 50% 30%, 100% 30%, 50% 100%, 50% 70%);
         }
 
         .slogan {
@@ -727,6 +733,9 @@
 
             <h2 class="category-title">Cables y Refacciones</h2>
             <div class="catalog-grid" id="grid-cables"></div>
+
+            <h2 class="category-title">Consolas</h2>
+            <div class="catalog-grid" id="grid-consolas"></div>
         </div>
     </section>
 
@@ -816,7 +825,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
         const firebaseConfig = {
@@ -967,7 +976,7 @@
         };
 
         window.renderCatalog = function() {
-            const categories = ['15', '12', 'array', 'sub', 'micro', 'cables'];
+            const categories = ['15', '12', 'array', 'sub', 'micro', 'cables', 'consolas'];
             
             categories.forEach(cat => {
                 const grid = document.getElementById('grid-' + cat);
@@ -1107,8 +1116,10 @@
         });
 
         // Firestore Listeners
-        onSnapshot(collection(db, "asr_products"), (snapshot) => {
+        onSnapshot(query(collection(db, "asr_products"), orderBy("createdAt", "desc")), (snapshot) => {
             allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Ordenamos local_mente para que aparezcan todos los productos, tengan o no número de orden
+            allProducts.sort((a, b) => (a.order || 0) - (b.order || 0));
             renderCatalog();
         });
     </script>
