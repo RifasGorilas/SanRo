@@ -148,8 +148,7 @@
         header {
             padding: 25px 0;
             background-color: rgba(0, 0, 0, 0.95);
-            position: sticky;
-            top: 0;
+            position: relative; /* Cambiado de sticky a relative */
             z-index: 1000;
         }
 
@@ -169,7 +168,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
-            margin-bottom: 5px;
+            margin-bottom: -10px;
             position: relative;
             z-index: 1;
         }
@@ -246,7 +245,7 @@
 
         .slogan {
             color: #d4af37;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             letter-spacing: 2px;
             font-weight: 700; /* Letras más gruesas */
             text-transform: uppercase;
