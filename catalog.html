@@ -74,6 +74,7 @@
         @media (max-width: 768px) {
             .top-bar .container {
                 justify-content: center;
+                padding: 5px 0;
             }
         }
 
@@ -126,9 +127,16 @@
 
         @media (max-width: 768px) {
             .hot-sale-float {
-                height: 80px;
+                display: block;
+                position: absolute;
+                top: 5px;
+                right: 15px;
+                height: 50px;
+                width: auto;
+                margin: 0;
+                transform: none;
                 left: auto;
-                right: -20px;
+                z-index: 10;
             }
         }
 
@@ -176,12 +184,57 @@
         }
 
         @media (max-width: 768px) {
+            header {
+                padding: 8px 0;
+                border-bottom: 1px solid #d4af37;
+                position: static; /* Quita el comportamiento fijo en móvil */
+            }
+            header .container {
+                gap: 8px;
+            }
             .logo-title {
-                font-size: 2.5rem;
+                font-size: 1.5rem;
             }
             .main-logo {
-                height: 160px;
-                padding: 25px;
+                height: 20px;
+                padding: 0;
+            }
+            .logo-row { 
+                gap: 5px; 
+                flex-direction: column; 
+                justify-content: center; 
+                align-items: center;
+                margin-bottom: 0;
+            }
+            .nav-links {
+                gap: 3px;
+                justify-content: center;
+            }
+            .nav-links li {
+                margin: 0;
+            }
+            .nav-links a {
+                font-size: 0.65rem;
+                padding: 6px 10px;
+                background: #1a1a1a;
+                border: 1px solid #333;
+                border-radius: 5px;
+                text-align: center;
+                display: block;
+                min-width: 60px;
+            }
+            .nav-links a:hover {
+                background: #d4af37;
+                color: #000;
+                border-color: #ffd700;
+            }
+            .slogan { display: none; }
+            .cart-count {
+                top: -5px;
+                right: -5px;
+                width: 18px;
+                height: 18px;
+                font-size: 0.65rem;
             }
         }
 
@@ -289,7 +342,10 @@
         }
 
         @media (max-width: 768px) {
-            .catalog-section h1 { font-size: 2.2rem; }
+            .catalog-section h1 { font-size: 1.5rem; }
+            .category-title { font-size: 1.2rem; }
+            .catalog-card { padding: 15px; }
+            .img-container { height: 180px; }
         }
 
         .category-title {
@@ -662,7 +718,8 @@
 
         @media (max-width: 768px) {
             .catalog-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr); /* Coloca los productos de 2 en 2 */
+                gap: 15px; /* Reduce un poco el espacio para que quepan mejor */
             }
         }
     </style>
@@ -812,11 +869,12 @@
             <span class="close-modal" onclick="window.closeTrackingModal()">&times;</span>
             <h2 style="color: #ffd700; margin-bottom: 20px;">RASTREO DE PEDIDO</h2>
             <div id="trackingInputSection">
-                <input type="text" id="orderTrackNum" placeholder="INGRESE NO. DE ORDEN" style="padding: 12px; width: 100%; border-radius: 8px; background: #222; color: #fff; border: 1px solid #d4af37; margin-bottom: 10px; text-align: center;">
+                <input type="text" id="orderTrackNum" placeholder="INGRESE NO. DE ORDEN (ASR-XXXXXX)" style="padding: 12px; width: 100%; border-radius: 8px; background: #222; color: #fff; border: 1px solid #d4af37; margin-bottom: 10px; text-align: center; text-transform: uppercase;">
                 <button class="btn-checkout" onclick="window.processTracking()" style="animation:none;">CONSULTAR</button>
             </div>
             <div id="trackingResultSection" style="display: none; margin-top: 20px;">
-                <h3 id="trackStatusText" style="color: #ffd700;"></h3>
+                <h3 id="trackStatusText" style="color: #ffd700; text-transform: uppercase; font-size: 1.5rem;"></h3>
+                <div id="emojiProgressLine" style="font-size: 1.5rem; margin: 25px 0; background: rgba(255,215,0,0.05); padding: 15px; border-radius: 10px; border: 1px dashed #d4af37; letter-spacing: 5px; text-align: center;"></div>
                 <p id="trackDetails" style="color: #ccc;"></p>
                 <button class="btn-track" onclick="window.trackOrder()" style="width: 100%; margin-top: 15px;">OTRA CONSULTA</button>
             </div>
@@ -861,7 +919,26 @@
                 document.getElementById('trackingInputSection').style.display = 'none';
                 document.getElementById('trackingResultSection').style.display = 'block';
                 document.getElementById('trackStatusText').innerText = data.productStatus;
-                document.getElementById('trackDetails').innerHTML = `<strong>ORDEN:</strong> ${data.orderNumber}<br><strong>CLIENTE:</strong> ${data.name}`;
+                
+                let emojis = "";
+                switch(data.productStatus) {
+                    case 'Preparándose':
+                        emojis = "📦 ── ⚪ ── ⚪ ── ⚪";
+                        break;
+                    case 'Saliendo de Bodega':
+                        emojis = "✅ ── 🚚 ── ⚪ ── ⚪";
+                        break;
+                    case 'Trayecto a su domicilio':
+                        emojis = "✅ ── ✅ ── 🏠 ── ⚪";
+                        break;
+                    case 'Entregado':
+                        emojis = "✅ ── ✅ ── ✅ ── 🎉";
+                        break;
+                    default:
+                        emojis = "📦 ── 🚚 ── 🏠 ── 🎉";
+                }
+                document.getElementById('emojiProgressLine').innerText = emojis;
+                document.getElementById('trackDetails').innerHTML = `<strong>ORDEN:</strong> ${data.orderNumber}<br><strong>CLIENTE:</strong> ${data.name}<br><strong>ESTADO DE PAGO:</strong> ${data.paymentStatus}`;
             });
         };
 

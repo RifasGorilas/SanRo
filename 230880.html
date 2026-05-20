@@ -9,7 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; background-color: #0a0a0a; color: #fff; display: flex; min-height: 100vh; }
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: #0a0a0a; 
+            color: #fff; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
         
         /* Sidebar */
         .sidebar {
@@ -27,10 +33,10 @@
 
         /* Reorder List Styles */
         #reorder-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            padding: 10px;
             background: #181818;
             border: 1px solid #333;
             border-radius: 15px;
@@ -44,7 +50,7 @@
             align-items: center;
             gap: 15px;
             cursor: grab;
-            width: calc(33.33% - 14px); /* 3 items per row, accounting for gap */
+            width: 100%;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -85,20 +91,64 @@
             color: #d4af37;
             font-size: 0.8rem;
         }
-        @media (max-width: 992px) {
-            .reorder-item {
-                width: calc(50% - 10px); /* 2 items per row */
-            }
+        
+        /* Main Content */
+        .main-content { 
+            flex: 1; 
+            padding: 20px; 
+            overflow-y: auto; 
+            width: 100%;
         }
-        @media (max-width: 768px) {
-            .reorder-item {
-                width: 100%; /* 1 item per row */
-            }
+        h1 { color: #ffd700; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; font-size: 1.4rem; }
+
+        /* Responsive Table Wrapper */
+        .responsive-table {
+            overflow-x: auto; /* Enable horizontal scrolling for tables on small screens */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            margin-top: 15px;
+            border-radius: 8px;
+            width: 100%;
         }
 
-        /* Main Content */
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        h1 { color: #ffd700; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
+        /* Media Queries for Mobile */
+        @media (max-width: 768px) {
+            body { display: block; }
+            .sidebar {
+                position: sticky;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: auto;
+                transform: none;
+                padding: 10px;
+                border-right: none;
+                border-bottom: 1px solid #d4af37;
+                z-index: 1001;
+            }
+            .sidebar h2 { display: none; } /* Ocultar título para ganar espacio */
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 5px;
+            }
+            .nav-menu li { margin-bottom: 0; }
+            .nav-menu a {
+                font-size: 0.7rem;
+                padding: 8px 10px;
+                background: #1a1a1a;
+                border-radius: 5px;
+                border: 1px solid #333;
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+                min-width: 80px;
+            }
+            .nav-menu a.active { background: #d4af37; color: #000; border-color: #ffd700; }
+            .main-content { padding: 20px 10px; }
+            h1 { font-size: 1.1rem; margin-bottom: 15px; text-align: center; }
+            .reorder-category-title { font-size: 0.9rem; text-align: center; }
+        }
 
         /* Card Form & Tables */
         .admin-card { background: #181818; border: 1px solid #333; border-radius: 15px; padding: 30px; margin-bottom: 30px; }
@@ -107,19 +157,37 @@
         .input-group label { font-size: 0.8rem; color: #d4af37; font-weight: 700; }
         .input-group input, .input-group select, .input-group textarea { 
             background: #222; border: 1px solid #444; padding: 12px; color: #fff; border-radius: 8px; font-family: inherit;
+            width: 100%;
         }
-        .input-group textarea { grid-column: span 2; resize: none; }
+        .input-group.full-width { grid-column: span 2; }
+        .input-group textarea { resize: none; }
         
+        .form-actions {
+            grid-column: span 2;
+            display: flex;
+            gap: 10px;
+        }
+
         .btn-save { 
-            grid-column: span 2; background: #d4af37; color: #000; border: none; padding: 15px; 
+            background: #d4af37; color: #000; border: none; padding: 15px; 
             font-weight: 900; text-transform: uppercase; cursor: pointer; border-radius: 8px; margin-top: 10px; transition: 0.3s;
         }
         .btn-save:hover { background: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+        
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; } /* Stack form items */
+            .input-group.full-width, .form-actions { grid-column: auto; } /* Remove span 2 */
+            .form-actions { flex-direction: column; } /* Stack buttons on mobile */
+            .admin-card { padding: 15px; }
+            .input-group input, .input-group select, .input-group textarea {
+                font-size: 16px; /* Prevents auto-zoom on iOS */
+            }
+        }
 
         /* Table Styles */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th { text-align: left; color: #d4af37; padding: 15px; border-bottom: 2px solid #333; font-size: 0.8rem; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        td { padding: 12px 15px; border-bottom: 1px solid #222; font-size: 0.85rem; }
         .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
         .status-paid { background: #2e7d32; color: #fff; }
         .status-pending { background: #d4af37; color: #000; }
@@ -137,6 +205,21 @@
         .login-box { width: 100%; max-width: 400px; }
     </style>
 </head>
+
+<!-- Desktop specific styles to override mobile fixed positioning -->
+<style>
+    @media (min-width: 769px) {
+        body { display: flex; } /* Restore flex for desktop layout */
+        .sidebar {
+            position: static; /* Not fixed on desktop */
+            transform: translateX(0); /* Always visible */
+            height: auto; /* Auto height */
+        }
+        .sidebar-overlay { display: none !important; } /* Ensure hidden on desktop */
+        .main-content { padding: 40px; } /* Restore desktop padding */
+    }
+</style>
+
 <body>
 
     <!-- Pantalla de Inicio de Sesión -->
@@ -158,8 +241,8 @@
         </div>
     </div>
 
-    <!-- Sidebar (Oculto inicialmente) -->
-    <div class="sidebar">
+    <!-- Sidebar (Visible como barra superior en móvil) -->
+    <div class="sidebar" id="sidebar">
         <h2>ASR ADMIN</h2>
         <ul class="nav-menu">
             <li><a href="#" class="active" onclick="switchTab('inventory')"><i class="fas fa-boxes"></i> Inventario</a></li>
@@ -174,7 +257,7 @@
     <!-- Contenido Principal (Oculto inicialmente) -->
     <div class="main-content">
         <!-- Sección Inventario -->
-        <section id="inventory-section">
+        <section id="inventory-section" class="hidden">
             <h1>Administración de Productos</h1>
             <div class="admin-card">
                 <h2 id="form-title" style="color: #d4af37; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase;">Agregar Nuevo Producto</h2>
@@ -212,11 +295,11 @@
                         <input type="text" id="pUrl" placeholder="https://..." style="margin-bottom:5px;">
                         <input type="file" id="pFile" accept="image/*">
                     </div>
-                    <div class="input-group" style="grid-column: span 2;">
+                    <div class="input-group full-width">
                         <label>Descripción</label>
                         <textarea id="pDesc" rows="4" placeholder="Breve descripción del producto..." required></textarea>
                     </div>
-                    <div style="grid-column: span 2; display: flex; gap: 10px;">
+                    <div class="form-actions">
                         <button type="submit" id="btn-submit" class="btn-save" style="flex: 2;">Publicar en Catálogo</button>
                         <button type="button" id="btn-cancel" class="btn-save hidden" style="flex: 1; background: #444; color: #fff;" onclick="cancelEdit()">Cancelar</button>
                     </div>
@@ -225,20 +308,22 @@
 
             <!-- Listado de Productos para Gestión -->
             <div class="admin-card">
-                <h2 style="color: #d4af37; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase;">Productos en Existencia</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Marca</th>
-                            <th>Modelo</th>
-                            <th>Precio</th>
-                            <th>Categoría</th>
-                            <th>Descuento</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-list"></tbody>
-                </table>
+                <h2 style="color: #d4af37; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase;">Productos en Catálogo</h2>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Precio</th>
+                                <th>Categoría</th>
+                                <th>Descuento</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-list"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -246,19 +331,21 @@
         <section id="orders-section" class="hidden">
             <h1>Administración de Pedidos</h1>
             <div class="admin-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No. Orden</th>
-                            <th>Cliente</th>
-                            <th>Teléfono</th>
-                            <th>Estado (Rep.)</th>
-                            <th>Estado Producto</th>
-                            <th>Estado Pago</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orders-list"></tbody>
-                </table>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Orden</th>
+                                <th>Cliente</th>
+                                <th>Teléfono</th>
+                                <th>Estado (Rep.)</th>
+                                <th>Estado Producto</th>
+                                <th>Estado Pago</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-list"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -275,18 +362,20 @@
         <section id="activity-log-section" class="hidden">
             <h1>Registro de Actividad</h1>
             <div class="admin-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha y Hora</th>
-                            <th>Usuario</th>
-                            <th>Acción Realizada</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activity-log-list">
-                        <!-- Actividades se cargarán aquí -->
-                    </tbody>
-                </table>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Usuario</th>
+                                <th>Acción Realizada</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-log-list">
+                            <!-- Actividades se cargarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </div>
@@ -345,7 +434,6 @@
                 // Asegurarse de que el contenido principal sea visible y el sidebar esté inicializado
                 document.querySelector('.sidebar').style.display = 'flex'; // O 'block' si no es flex
                 document.querySelector('.main-content').style.display = 'block';
-                switchTab('inventory'); // Cargar la pestaña de inventario por defecto
             } else {
                 document.getElementById('login-overlay').style.display = 'flex';
                 document.querySelector('.sidebar').style.display = 'none';
