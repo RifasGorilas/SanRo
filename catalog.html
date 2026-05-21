@@ -1127,6 +1127,23 @@
             // Generar número de orden aleatorio
             const orderNumber = 'ASR-' + Math.floor(100000 + Math.random() * 900000);
 
+            // Preparar resumen del producto y datos de la orden
+            let subtotal = 0;
+            let summaryText = "";
+            const orderItems = [];
+            cart.forEach(item => {
+                const itemPrice = item.discount > 0 ? item.price * (1 - (item.discount / 100)) : item.price;
+                const itemTotal = itemPrice * (item.quantity || 1);
+                subtotal += itemTotal;
+                summaryText += `* ${item.brand} ${item.model} (x${item.quantity}) - $${itemTotal.toLocaleString()}%0A`;
+                orderItems.push({
+                    brand: item.brand,
+                    model: item.model,
+                    quantity: item.quantity,
+                    price: itemPrice
+                });
+            });
+
             // Guardar orden en Firestore
             const newOrder = {
                 orderNumber: orderNumber,
@@ -1135,6 +1152,8 @@
                 state: state,
                 productStatus: 'Preparándose',
                 paymentStatus: 'No pagado',
+                items: orderItems,
+                total: subtotal,
                 timestamp: new Date()
             };
 
@@ -1143,15 +1162,6 @@
             } catch (err) {
                 console.error("Error al guardar pedido: ", err);
             }
-
-            // Preparar resumen del producto para WhatsApp
-            let subtotal = 0;
-            let summaryText = "";
-            cart.forEach(item => {
-                const itemTotal = (item.discount > 0 ? item.price * (1 - (item.discount / 100)) : item.price) * (item.quantity || 1);
-                subtotal += itemTotal;
-                summaryText += `* ${item.brand} ${item.model} (x${item.quantity}) - $${itemTotal.toLocaleString()}%0A`;
-            });
 
             const waMessage = `Hola Audios Sanroman! Mi nombre es ${name}. He realizado un pedido.%0A%0A*No. de Orden:* ${orderNumber}%0A*Estado:* ${state}%0A*Teléfono:* ${phone}%0A%0A*Detalles del Pedido:*%0A${summaryText}%0A*Total:* $${subtotal.toLocaleString()}`;
             const waLink = `https://wa.me/526867554593?text=${waMessage}`;
